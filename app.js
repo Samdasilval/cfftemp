@@ -71,13 +71,33 @@ const renderStationName = (station) => {
   stationElement.textContent = station;
 };
 
+function compareNumbers(a, b) {
+  return a - b;
+}
+
 // Votre code peut se trouver dans cette fonction. L'appel vers getPosition est
 // déjà implémenté. Si vous jetez un coup d'oeil à votre console vous verrez un objet
 // contenant votre position.
-const getDashboardInformation = () => {
-  getPosition().then((res) => {
-    console.log(res);
-  });
+const getDashboardInformation = async () => {
+  const res = await getPosition();
+  console.log(res);
+  const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${res.lat}&longitude=${res.long}&daily=apparent_temperature_max,apparent_temperature_min&timezone=auto`);
+  const transportRes = await fetch(`http://transport.opendata.ch/v1/locations?x=${res.lat}&y=${res.long}`);
+  const dataWeather = await weatherRes.json();
+  const dataTransport = await transportRes.json();
+
+  const min = dataWeather.daily.apparent_temperature_min.sort(compareNumbers);
+  const max = dataWeather.daily.apparent_temperature_max.sort(compareNumbers);
+  renderWeather(min[0], max[0]);
+
+  const nameStation = dataTransport.stations.filter((stations) => stations.icon === "train");
+  const resStation = await fetch(`https://transport.opendata.ch/v1/stationboard?station=${nameStation[0].name}&limit=5`);
+  const dataStation = await resStation.json();
+  const dataStationFiltered = parseStationData(dataStation);
+  console.log(dataStationFiltered.departures[0]);
+  const allStation = dataStationFiltered.departures;
+  allStation.forEach((e) => renderTrain(e));
 };
 
 getDashboardInformation();
+
