@@ -82,7 +82,7 @@ const getDashboardInformation = async () => {
   const res = await getPosition();
   console.log(res);
   const weatherRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${res.lat}&longitude=${res.long}&daily=apparent_temperature_max,apparent_temperature_min&timezone=auto`);
-  const transportRes = await fetch(`http://transport.opendata.ch/v1/locations?x=${res.lat}&y=${res.long}`);
+  const transportRes = await fetch(`https://transport.opendata.ch/v1/locations?x=${res.lat}&y=${res.long}`);
   const dataWeather = await weatherRes.json();
   const dataTransport = await transportRes.json();
 
